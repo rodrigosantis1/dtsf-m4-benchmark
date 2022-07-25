@@ -1,5 +1,9 @@
 #This code can be used to reproduce the forecasts of the M4 Competition STATISTICAL Benchmarks and evaluate their accuracy
 
+install.packages('forecast', repo='http://cran.rstudio.com/')
+install.packages('reticulate')
+
+
 library(forecast) #Requires v8.2
 library(DTScanF)
 
@@ -250,11 +254,18 @@ Benchmarks <- function(input, fh){
   f9 <- dtsf(ts=as.numeric(input), poli=1, best=10, window=fh, forecast=fh)$forecast
   t9 <<- t9 + Sys.time() - start_t; start_t <- Sys.time()
   
+  f10 <- forecast(auto.arima(input), seasonal=T, h=fh)$mean
+  t10 <<- t10 + Sys.time() - start_t; start_t <- Sys.time()
+  
+  f11 <- forecast(ets(input),h=fh)$mean
+  t11 <<- t11 + Sys.time() - start_t; start_t <- Sys.time()
+
+
 #  f10 <- gsDTScan(input, fh)
 #  t10 = t10 + Sys.time() - start_t; start_t <- Sys.time()
   
   
-  return(list(f1,f2,f3,f4,f5,f6,f7,f8,f9)) #,f10
+  return(list(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11)) #,f10
 }
 
 #Methods, Horizon, time-series
@@ -297,7 +308,7 @@ datasets <- c('Hourly','Daily','Weekly','Monthly','Quarterly','Yearly')
 horizons <- c(48,14,13,18,8,6)
 frequencies <- c(24,1,1,12,4,1)
 
-t1 <- t2 <- t3 <- t4 <- t5 <- t6 <- t7 <- t9 <- t10 <- 0
+t1 <- t2 <- t3 <- t4 <- t5 <- t6 <- t7 <- t9 <- t10 <- t11 <- t12 <- 0
 
 for (dn in seq(1,6)){
 
@@ -315,7 +326,7 @@ for (dn in seq(1,6)){
   
   
   # Prepare dataset
-  Names_benchmarks <- c("Naive", "sNaive", "Naive2", "SES", "Holt", "Damped", "Theta", "Comb", "DTScanF") #, 'DTScanF2'
+  Names_benchmarks <- c("Naive", "sNaive", "Naive2", "SES", "Holt", "Damped", "Theta", "Comb", "DTScanF", "ARIMA", "ETS") #, 'DTScanF2'
   Total_smape=Total_mase <- array(NA,dim = c(length(Names_benchmarks), fh, length(data_train)))
   
   pb <- txtProgressBar(min=0, max=length(data_train), style=3)
